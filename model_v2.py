@@ -1,6 +1,6 @@
-from keras.models import *
-from keras.layers import *
-from keras.optimizers import *
+from tensorflow.keras.models import *
+from tensorflow.keras.layers import *
+from tensorflow.keras.optimizers import *
 
 IMG_SIZE = 512
 
@@ -63,10 +63,10 @@ def unet(pretrained_weights=None, input_size=(IMG_SIZE, IMG_SIZE, 3),num_class=2
         loss_function = 'binary_crossentropy'
     else:
         conv10 = Conv2D(num_class, 1, activation='softmax')(conv9)
-        loss_function = 'categorical_crossentropy'
+        # loss_function = 'categorical_crossentropy'
     model = Model(input=inputs, output=conv10)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss=loss_function, metrics=["accuracy"])
+    model.compile(optimizer=Adam(lr=1e-4), loss=dice_loss, metrics=["accuracy"])
     model.summary()
 
     if (pretrained_weights):
