@@ -2,10 +2,14 @@ from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
 import tensorflow as tf
+import numpy as np
+from keras import backend as K
 
 IMG_SIZE = 512
 
 # Building the loss function (Dice Coefficient)
+# This function is not working (stack on 50%) maybe because it
+# is used for binary classification
 def dice_loss(y_true, y_pred):
     y_true = tf.cast(y_true, tf.float32)
     y_pred = tf.math.sigmoid(y_pred)
@@ -13,6 +17,50 @@ def dice_loss(y_true, y_pred):
     denominator = tf.reduce_sum(y_true + y_pred)
 
     return 1 - numerator / denominator
+
+# Building a custom loss Dice Coefficient function for multi class
+# segmentation. Ref (https://github.com/keras-team/keras/issues/9395)
+
+def generalized_dice_loss_w(y_true, y_pred): 
+    # Compute weights: "the contribution of each label is corrected by the inverse of its volume"
+    Ncl = y_pred.shape[-1]
+    w = np.zeros((Ncl,))
+    for l in range(0,Ncl): 
+        w[l] = np.sum(np.asarray(y_true[:,:,:,l]==1,np.int8))
+    w = 1/(w**2+0.00001)
+
+    # Compute gen dice coef:
+    numerator = y_true*y_pred
+    numerator = w*K.sum(numerator,(0,1,2))
+    numerator = K.sum(numerator)
+    
+    denominator = y_true+y_pred
+    denominator = w*K.sum(denominator,(0,1,2))
+    denominator = K.sum(denominator)
+    
+    gen_dice_coef = numerator/denominator
+    
+    return 1-2*gen_dice_coef
+
+# Tversky loss function
+ALPHA = 0.5
+BETA = 0.5
+
+def TverskyLoss(targets, inputs, alpha=ALPHA, beta=BETA, smooth=1e-6):
+        
+        #flatten label and prediction tensors
+        inputs = K.flatten(inputs)
+        targets = K.flatten(targets)
+        
+        #True Positives, False Positives & False Negatives
+        TP = K.sum((inputs * targets))
+        FP = K.sum(((1-targets) * inputs))
+        FN = K.sum((targets * (1-inputs)))
+       
+        Tversky = (TP + smooth) / (TP + alpha*FP + beta*FN + smooth)  
+        
+        return 1 - Tversky
+
 
 def unet(pretrained_weights=None, input_size=(IMG_SIZE, IMG_SIZE, 3),num_class=2):
     inputs = Input(input_size)
@@ -67,8 +115,8 @@ def unet(pretrained_weights=None, input_size=(IMG_SIZE, IMG_SIZE, 3),num_class=2
         # loss_function = 'categorical_crossentropy'
     model = Model(inputs, conv10)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss=dice_loss, metrics=["accuracy"])
-    #model.summary()
+    model.compile(optimizer=Adam(lr=1e-4), loss=TverskyLoss, metrics=["accuracy"])
+    model.summary()
 
     if (pretrained_weights):
         model.load_weights(pretrained_weights)
