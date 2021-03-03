@@ -1,3 +1,6 @@
+import sys
+sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -26,9 +29,6 @@ def label_to_color_image(label):
 
 
 def vis_segmentation2(image, seg_map):
-    """
-    输入图片和分割 mask 的统一可视化.
-    """
     seg_image = label_to_color_image(seg_map).astype(np.uint8)
     plt.figure()
     plt.imshow(seg_image)
@@ -37,8 +37,8 @@ def vis_segmentation2(image, seg_map):
     plt.show()
 
 
-test_path = "CamVid\\test"
-predict_path =  "CamVid\\predict"
+test_path = "data/phyto/test"
+predict_path =  "data/phyto/predicted_results"
 for filename in os.listdir(test_path):
     imgfile = os.path.join(test_path,filename)
     pngfile = os.path.join(predict_path,filename.split('.')[0]+"_predict.png")
