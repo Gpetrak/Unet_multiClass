@@ -7,11 +7,11 @@ batch_size = 2
 image_datagen = ImageDataGenerator(rescale=1./255)
 mask_datagen = ImageDataGenerator()
 
-seed = np.random.randint(0,1e5)
+# seed = np.random.randint(0,1e5)
 
-test_mask_generator = mask_datagen.flow_from_directory('data/phyto/validation/val_labels',seed=seed, target_size=target_size,batch_size = batch_size)
+test_mask_generator = mask_datagen.flow_from_directory('data/phyto/validation/val_labels', arget_size=target_size,batch_size = batch_size)
 
-test_image_generator = image_datagen.flow_from_directory('data/phyto/validation/val_imgs',seed=seed, target_size=target_size, batch_size = batch_size)
+test_image_generator = image_datagen.flow_from_directory('data/phyto/validation/val_imgs', target_size=target_size, batch_size = batch_size)
 
 def combine_generator(gen1, gen2,batch_size=6,training=True):
     while True:
@@ -31,7 +31,6 @@ def show_predictions_in_test(generator=None, num=3):
         generator = test_generator
     for i in range(num):
         image, mask=next(generator)
-        print(image)
         sample_image, sample_mask= image[1], mask[1]
         image = np.expand_dims(sample_image, axis=0)
 
