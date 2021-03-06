@@ -115,7 +115,7 @@ def unet(pretrained_weights=None, input_size=(IMG_SIZE, IMG_SIZE, 3),num_class=2
         # loss_function = 'categorical_crossentropy'
     model = Model(inputs, conv10)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss=TverskyLoss, metrics=["accuracy"])
+    model.compile(optimizer=Adam(lr=1e-4), loss='categorical_crossentropy', metrics=["accuracy"])
     model.summary()
 
     if (pretrained_weights):
