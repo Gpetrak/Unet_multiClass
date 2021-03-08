@@ -30,14 +30,14 @@ def combine_generator(gen1, gen2,batch_list=6,training=True):
 test_generator = combine_generator(test_image_generator, test_mask_generator,training=True)
 
 
-def show_predictions_in_test(generator=None, num=3):
+def show_predictions_in_test(model_name, generator=None, num=3):
     if generator ==None:
         generator = test_generator
     for i in range(num):
         image, mask=next(generator)
         sample_image, sample_mask= image[1], mask[1]
         image = np.expand_dims(sample_image, axis=0)
-        pr_mask = model.predict(image)
+        pr_mask = model_name.predict(image)
         pr_mask=np.expand_dims(pr_mask[0].argmax(axis=-1),axis=-1)
         display([sample_image, sample_mask,pr_mask])
         
