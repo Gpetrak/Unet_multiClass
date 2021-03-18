@@ -1,5 +1,6 @@
 *.swp
 *.pyc
-data
+data/phyto
+data/stored_models
 __pycache__
 log
