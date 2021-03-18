@@ -43,7 +43,8 @@ Then you also can use label_visualization.py to visual your resut like this:
 ## About
 Unet is More commonly used in medical areas.
 
-## Reference
+## Code reference
 https://github.com/wuyang0329/unet
-
+## Data reference
+https://www.kaggle.com/longnguyen2306/bacteria-detection-with-darkfield-microscopy
 
