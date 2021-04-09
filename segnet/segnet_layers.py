@@ -57,6 +57,10 @@ class MaxPoolingWithArgmax2D(Layer):
         self.padding = padding
         self.pool_size = pool_size
         self.strides = strides
+        
+    def get_config(self):
+        cfg = super().get_config()
+        return cfg  
 
     def call(self, inputs, **kwargs):
         padding = self.padding
@@ -92,6 +96,10 @@ class MaxUnpooling2D(Layer):
     def __init__(self, up_size=(2, 2), **kwargs):
         super(MaxUnpooling2D, self).__init__(**kwargs)
         self.up_size = up_size
+        
+    def get_config(self):
+        cfg = super().get_config()
+        return cfg 
 
     def call(self, inputs, output_shape=None):
         updates = inputs[0]

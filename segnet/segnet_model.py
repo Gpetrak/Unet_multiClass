@@ -120,10 +120,10 @@ def segnet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode="softm
 
     conv_26 = Convolution2D(n_labels, (1, 1), padding="valid")(conv_25)
     conv_26 = BatchNormalization()(conv_26)
-    conv_26 = Reshape(
-        (input_shape[0] * input_shape[1], n_labels),
-        input_shape=(input_shape[0], input_shape[1], n_labels),
-    )(conv_26)
+    #conv_26 = Reshape(
+    #    (input_shape[0] * input_shape[1], n_labels),
+    #    input_shape=(input_shape[0], input_shape[1], n_labels),
+    #)(conv_26)
 
     outputs = Activation(output_mode)(conv_26)
     print("Build decoder done..")
