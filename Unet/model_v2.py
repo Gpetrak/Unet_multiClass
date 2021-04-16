@@ -3,9 +3,14 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
 import tensorflow as tf
 import numpy as np
-from keras import backend as K
+from tensorflow.keras import backend as K
 
-IMG_SIZE = 512
+# IOU metric
+def iou_coef(y_true, y_pred, smooth=1):
+  intersection = K.sum(K.abs(y_true * y_pred), axis=[1,2,3])
+  union = K.sum(y_true,[1,2,3])+K.sum(y_pred,[1,2,3])-intersection
+  iou = K.mean((intersection + smooth) / (union + smooth), axis=0)
+  return iou
 
 # Building the loss function (Dice Coefficient)
 # This function is not working (stack on 50%) maybe because it
@@ -17,6 +22,8 @@ def dice_loss(y_true, y_pred):
     denominator = tf.reduce_sum(y_true + y_pred)
 
     return 1 - numerator / denominator
+
+IMG_SIZE = 512
 
 # Building a custom loss Dice Coefficient function for multi class
 # segmentation. Ref (https://github.com/keras-team/keras/issues/9395)
@@ -162,7 +169,7 @@ def unet(pretrained_weights=None, input_size=(IMG_SIZE, IMG_SIZE, 3),num_class=2
         # loss_function = 'categorical_crossentropy'
     model = Model(inputs, conv10)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss=TverskyLoss, metrics=["accuracy"])
+    model.compile(loss=TverskyLoss, optimizer=Adam(lr=1e-4), metrics=['accuracy', dice_coef, iou_coef])
     model.summary()
 
     if (pretrained_weights):
