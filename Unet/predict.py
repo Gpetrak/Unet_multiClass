@@ -2,16 +2,18 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 
 target_size = (512, 512)
-seed = np.random.randint(0,1e5)
+batch_size = 2
 
 image_datagen = ImageDataGenerator(rescale=1./255)
 mask_datagen = ImageDataGenerator()
 
-test_image_generator = image_datagen.flow_from_directory('data/phyto/validation/val_imgs/', seed=seed, target_size=target_size, class_mode=None, batch_size = 6)
-test_mask_generator = mask_datagen.flow_from_directory('data/phyto/validation/val_labels/', seed=seed, target_size=target_size, class_mode=None, batch_size = 6)
+# seed = np.random.randint(0,1e5)
 
-def combine_generator(gen1, gen2, batch_list=6,training=True):
-  
+test_mask_generator = mask_datagen.flow_from_directory('data/phyto/validation/val_labels', target_size=target_size, class_mode=None, batch_size = batch_size)
+
+test_image_generator = image_datagen.flow_from_directory('data/phyto/validation/val_imgs', target_size=target_size, class_mode=None, batch_size = batch_size)
+
+def combine_generator(gen1, gen2,batch_list=6,training=True):
     while True:
         image_batch, label_batch=next(gen1)[0], np.expand_dims(next(gen2)[0][:,:,0],axis=-1)
         image_batch, label_batch=np.expand_dims(image_batch,axis=0),np.expand_dims(label_batch,axis=0)

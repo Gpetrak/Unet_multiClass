@@ -1,7 +1,5 @@
 *.swp
 *.pyc
-data/phyto
-data/stored_models
-data/phyto_4_class
+data/*
 __pycache__
 log

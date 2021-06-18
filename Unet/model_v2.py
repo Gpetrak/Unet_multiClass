@@ -11,6 +11,15 @@ def iou_coef(y_true, y_pred, smooth=1):
   union = K.sum(y_true,[1,2,3])+K.sum(y_pred,[1,2,3])-intersection
   iou = K.mean((intersection + smooth) / (union + smooth), axis=0)
   return iou
+  
+def dice_coef(y_true, y_pred, smooth=1):
+  intersection = K.sum(y_true * y_pred, axis=[1,2,3])
+  union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3])
+  dice = K.mean((2. * intersection + smooth)/(union + smooth), axis=0)
+  return dice
+
+
+IMG_SIZE = 256
 
 # Building the loss function (Dice Coefficient)
 # This function is not working (stack on 50%) maybe because it
@@ -22,8 +31,6 @@ def dice_loss(y_true, y_pred):
     denominator = tf.reduce_sum(y_true + y_pred)
 
     return 1 - numerator / denominator
-
-IMG_SIZE = 512
 
 # Building a custom loss Dice Coefficient function for multi class
 # segmentation. Ref (https://github.com/keras-team/keras/issues/9395)
@@ -67,7 +74,7 @@ def TverskyLoss(targets, inputs, alpha=ALPHA, beta=BETA, smooth=1e-6):
         Tversky = (TP + smooth) / (TP + alpha*FP + beta*FN + smooth)  
         
         return 1 - Tversky
-
+        
 # Tversky loss for 3D images
 # Ref: salehi17, "Twersky loss function for image segmentation using 3D FCDN"
 # -> the score is computed for each class separately and then summed
@@ -93,71 +100,92 @@ def tversky_loss(y_true, y_pred):
     Ncl = K.cast(K.shape(y_true)[-1], 'float32')
     return Ncl-T
 
-
 def unet(pretrained_weights=None, input_size=(IMG_SIZE, IMG_SIZE, 3),num_class=2):
     inputs = Input(input_size)
     conv1 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
+    # conv1.trainable = False
     conv1 = BatchNormalization()(conv1)
     conv1 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv1)
+    # conv1.trainable = False
     conv1 = BatchNormalization()(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
     conv2 = Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool1)
+    # conv2.trainable = False
     conv2 = BatchNormalization()(conv2)
     conv2 = Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv2)
+    # conv2.trainable = False
     conv2 = BatchNormalization()(conv2)
     pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
     conv3 = Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool2)
+    # conv3.trainable = False
     conv3 = BatchNormalization()(conv3)
     conv3 = Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv3)
+    # conv3.trainable = False
     conv3 = BatchNormalization()(conv3)
     pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
     conv4 = Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool3)
+    # conv4.trainable = False
     conv4 = BatchNormalization()(conv4)
     conv4 = Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv4)
+    # conv4.trainable = False
     conv4 = BatchNormalization()(conv4)
     drop4 = Dropout(0.5)(conv4)
     pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
 
     conv5 = Conv2D(1024, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool4)
+    # conv5.trainable = False
     conv5 = BatchNormalization()(conv5)
     conv5 = Conv2D(1024, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv5)
+    # conv5.trainable = False
     conv5 = BatchNormalization()(conv5)
     drop5 = Dropout(0.5)(conv5)
 
     up6 = Conv2D(512, 2, activation='relu', padding='same', kernel_initializer='he_normal')(
         UpSampling2D(size=(2, 2))(drop5))
+    # up6.trainable = False
     up6 = BatchNormalization()(up6)
     merge6 = concatenate([drop4, up6], axis=3)
     conv6 = Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge6)
+    # conv6.trainable = False
     conv6 = BatchNormalization()(conv6)
     conv6 = Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv6)
+    # conv6.trainable = False
     conv6 = BatchNormalization()(conv6)
 
     up7 = Conv2D(256, 2, activation='relu', padding='same', kernel_initializer='he_normal')(
         UpSampling2D(size=(2, 2))(conv6))
+    # up7.trainable = False
     up7 = BatchNormalization()(up7)
     merge7 = concatenate([conv3, up7], axis=3)
     conv7 = Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge7)
+    # conv7.trainable = False
     conv7 = BatchNormalization()(conv7)
     conv7 = Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv7)
+    # conv6.trainable = False
     conv7 = BatchNormalization()(conv7)
 
     up8 = Conv2D(128, 2, activation='relu', padding='same', kernel_initializer='he_normal')(
         UpSampling2D(size=(2, 2))(conv7))
+    # up8.trainable = False
     up8 = BatchNormalization()(up8)
     merge8 = concatenate([conv2, up8], axis=3)
     conv8 = Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge8)
+    # conv8.trainable = False
     conv8 = BatchNormalization()(conv8)
     conv8 = Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv8)
+    # conv8.trainable = False
     conv8 = BatchNormalization()(conv8)
 
     up9 = Conv2D(64, 2, activation='relu', padding='same', kernel_initializer='he_normal')(
         UpSampling2D(size=(2, 2))(conv8))
+    # up9.trainable = False
     up9 = BatchNormalization()(up9)
     merge9 = concatenate([conv1, up9], axis=3)
     conv9 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge9)
+    # conv9.trainable = False
     conv9 = BatchNormalization()(conv9)
     conv9 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
+    # conv9.trainable = False
     conv9 = BatchNormalization()(conv9)
     conv9 = Conv2D(num_class, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
     conv9 = BatchNormalization()(conv9)
@@ -169,8 +197,11 @@ def unet(pretrained_weights=None, input_size=(IMG_SIZE, IMG_SIZE, 3),num_class=2
         # loss_function = 'categorical_crossentropy'
     model = Model(inputs, conv10)
 
-    model.compile(loss=TverskyLoss, optimizer=Adam(lr=1e-4), metrics=['accuracy', dice_coef, iou_coef])
-    model.summary()
+    # model.compile(optimizer=Adam(lr=1e-4), loss=TverskyLoss, metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=5)])
+    
+    # Compile the model
+    model.compile(loss=dice_loss, optimizer=Nadam(lr=1e-3), metrics=['accuracy', dice_coef, iou_coef])
+    # model.summary()
 
     if (pretrained_weights):
         model.load_weights(pretrained_weights)

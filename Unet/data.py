@@ -31,7 +31,7 @@ class data_preprocess:
     def __init__(self, train_path=None, image_folder=None, label_folder=None,
                  valid_path=None,valid_image_folder =None,valid_label_folder = None,
                  test_path=None, save_path=None,
-                 img_rows=512, img_cols=512,
+                 img_rows=256, img_cols=256,
                  flag_multi_class=False,
                  num_classes = 2):
         self.img_rows = img_rows
@@ -57,7 +57,7 @@ class data_preprocess:
 
         self.flag_multi_class = flag_multi_class
         self.num_class = num_classes
-        self.target_size = (512, 512)
+        self.target_size = (256, 256)
         self.img_type = 'png'
 
     def adjustData(self, img, label):
